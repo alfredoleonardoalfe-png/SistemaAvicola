@@ -10,9 +10,12 @@ body{margin:0;background:#f2f2f2;text-align:center}
 header{background:#1a7a2e;color:white;padding:20px}
 header h1{margin:0;font-size:22px}
 .card{background:white;max-width:460px;margin:20px auto;padding:20px;border-radius:12px;box-shadow:0 2px 10px #0002}
+.input-box{position:relative}
+.input-box input{width:100%;padding:12px 40px 12px 12px;margin:6px 0;border:1px solid #ccc;border-radius:8px;font-size:16px}
+.input-box span{position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:20px}
 input{width:100%;padding:12px;margin:6px 0;border:1px solid #ccc;border-radius:8px;font-size:15px}
 button{width:100%;padding:12px;background:#1a7a2e;color:white;border:none;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;margin-top:6px}
-button.sec{background:#ff8c00} button.red{background:#d32f2f} button.blue{background:#0b5ed7}
+button.sec{background:#ff8c00} button.red{background:#d32f2f} button.blue{background:#0b5ed7} button.gray{background:#777}
 .hidden{display:none}
 .badge{background:#e8f5e9;padding:10px;border-radius:8px;margin:10px 0}
 table{width:100%;border-collapse:collapse;margin-top:10px}
@@ -27,17 +30,28 @@ td,th{border:1px solid #ddd;padding:8px;font-size:13px}
 <div id="login" class="card">
 <h2>Bienvenido al<br>SISTEMA DE ADMINISTRACION AVICOLA</h2>
 <p>Digite su usuario y contraseña</p>
-<input id="usuario" placeholder="USUARIO  ej: pollito pollon">
-<input id="password" type="password" placeholder="PASSWORD">
+
+<div class="input-box">
+<input id="usuario" placeholder="USUARIO  ej: pollito pollon" autocomplete="off">
+<span onclick="verOjo('usuario',this)">👁️</span>
+</div>
+
+<div class="input-box">
+<input id="password" type="password" placeholder="PASSWORD" autocomplete="off">
+<span onclick="verOjo('password',this)">👁️</span>
+</div>
+
 <button onclick="ingresar()">INGRESAR</button>
 <p id="error" style="color:red"></p>
-<div class="badge">✅ <b>30 DÍAS DE PRUEBA GRATIS</b><br>💰 Luego Plan Mensual - Costo Mensual</div>
-<p style="font-size:12px;color:#666">Dueño Total: admin / admin123</p>
+<!-- SOLO EL DUEÑO VE ESTO EN SU PANEL, NO EN LOGIN DE TRABAJADORES -->
+<p style="font-size:12px;color:#888">Si dice password incorrecto, dale abajo a REPARAR</p>
+<button class="gray" onclick="reparar()">🔧 REPARAR - BORRAR DATOS VIEJOS</button>
+<p style="font-size:12px;color:#666;margin-top:10px">Dueño Total: admin / admin123</p>
 </div>
 
 <div id="admin" class="card hidden" style="max-width:540px">
 <h2>USUARIOS SUSCRITOS</h2>
-<div class="badge">✅ 30 DÍAS DE PRUEBA | 💰 COSTO MENSUAL</div>
+<div class="badge">✅ 30 DÍAS DE PRUEBA | 💰 COSTO MENSUAL<br><small>Solo tú ves esto, Alfredo</small></div>
 <table><tr><th>EMPRESA</th><th>ESTADO</th><th>DIAS</th></tr><tbody id="listaSuscritos"></tbody></table>
 <h3>AGREGAR USUARIO / EMPRESA</h3>
 <input id="nuevoUsuario" placeholder="Nuevo USUARIO ej: pollito pollon">
@@ -52,10 +66,9 @@ td,th{border:1px solid #ddd;padding:8px;font-size:13px}
 <div id="panel" class="card hidden">
 <h2 id="tituloEmpresa"></h2>
 <p id="tituloRol"></p>
-<div class="badge" id="infoPrueba"></div>
+<!-- YA NO SE MUESTRA DIAS NI COSTO A LOS USUARIOS DE POLLITO POLLON -->
 <div class="menu" id="menuOpciones"></div>
 
-<!-- SOLO PARA EL JEFE / ADMINISTRADOR -->
 <div id="gestionJefe" class="cargo-box hidden">
 <h3>👑 MIS CARGOS Y CONTRASEÑAS</h3>
 <p style="font-size:13px">Aquí ves todo. Si quieres un cargo nuevo o un diseño especial, <b>pídeselo a Alfredo</b> y él te lo crea.</p>
@@ -72,7 +85,7 @@ td,th{border:1px solid #ddd;padding:8px;font-size:13px}
 </div>
 
 <script>
-let usuarios = JSON.parse(localStorage.getItem('usuarios_avicola_v2') || 'null') || {
+let datosIniciales = {
   "pollito pollon": {
     dias:30,
     cargos:[
@@ -83,27 +96,47 @@ let usuarios = JSON.parse(localStorage.getItem('usuarios_avicola_v2') || 'null')
     ]
   }
 };
+let usuarios = JSON.parse(localStorage.getItem('usuarios_avicola_v3') || 'null') || datosIniciales;
+// Si los datos viejos no tienen 0000, los reparamos solos
+if(!usuarios["pollito pollon"] || !usuarios["pollito pollon"].cargos.find(c=>c.pass==="0000")){
+  usuarios = datosIniciales;
+  localStorage.setItem('usuarios_avicola_v3', JSON.stringify(usuarios));
+}
 let empresaActual="";
 
-function guardar(){ localStorage.setItem('usuarios_avicola_v2', JSON.stringify(usuarios)); mostrarAdmin(); }
+function verOjo(id, el){
+  let inp=document.getElementById(id);
+  if(inp.type==="password"){ inp.type="text"; el.innerText="🙈"; }
+  else { inp.type="password"; el.innerText="👁️"; }
+}
+function guardar(){ localStorage.setItem('usuarios_avicola_v3', JSON.stringify(usuarios)); mostrarAdmin(); }
+function reparar(){
+  localStorage.removeItem('usuarios_avicola');
+  localStorage.removeItem('usuarios_avicola_v2');
+  localStorage.removeItem('usuarios_avicola_v3');
+  usuarios = JSON.parse(JSON.stringify(datosIniciales));
+  guardar();
+  alert("REPARADO ✅\n\nAhora prueba:\npollito pollon / 0000");
+}
 function ingresar(){
   let u=document.getElementById('usuario').value.trim().toLowerCase();
   let p=document.getElementById('password').value.trim();
+  // Limpia espacios raros
+  u=u.replace(/\s+/g,' ').trim();
   if(u==="admin" && p==="admin123"){
     document.getElementById('login').classList.add('hidden');
     document.getElementById('admin').classList.remove('hidden');
     mostrarAdmin(); return;
   }
   let emp=usuarios[u];
-  if(!emp){ document.getElementById('error').innerText="Usuario no encontrado"; return; }
-  let cargo=emp.cargos.find(c=>c.pass===p);
-  if(!cargo){ document.getElementById('error').innerText="Password incorrecto"; return; }
+  if(!emp){ document.getElementById('error').innerText="Usuario no encontrado. Dale a REPARAR abajo."; return; }
+  let cargo=emp.cargos.find(c=>String(c.pass).trim()===String(p).trim());
+  if(!cargo){ document.getElementById('error').innerText="Password incorrecto. Dale a REPARAR abajo y prueba 0000 de nuevo."; return; }
   empresaActual=u;
   document.getElementById('login').classList.add('hidden');
   document.getElementById('panel').classList.remove('hidden');
   document.getElementById('tituloEmpresa').innerText="Bienvenido: "+u.toUpperCase();
   document.getElementById('tituloRol').innerText=cargo.nombre+" - "+cargo.funcion;
-  document.getElementById('infoPrueba').innerHTML="✅ Te quedan <b>"+emp.dias+" DÍAS DE PRUEBA</b><br>💰 Luego Costo Mensual";
 
   let menu="";
   if(cargo.nombre==="ADMINISTRADOR") menu="<button>👥 VER MIS TRABAJADORES</button><button>📦 COMPRA</button><button>💰 VENTA</button><button>📋 PLANILLA</button><button>⚖️ BALANCERO</button>";
@@ -144,7 +177,7 @@ function eliminarCargo(i){
   guardar(); mostrarCargos();
 }
 function pedirDiseno(){
-  alert("Tu pedido fue enviado a Alfredo.\n\nÉl te creará el cargo / diseño según lo que le pidas.\n\nEjemplo: 'Alfredo quiero un cargo CAJERO que solo vea caja'");
+  alert("Tu pedido fue enviado a Alfredo.\n\nÉl te creará el cargo / diseño según lo que le pidas.");
 }
 function mostrarAdmin(){
   let html="";
