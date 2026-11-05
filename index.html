@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRES CORRALES - SISTEMA AVICOLA</title>
+<style>
+body{font-family:Arial;margin:0;background:#f2f2f2}
+.cont{max-width:480px;margin:0 auto;padding:15px}
+h1{text-align:center;line-height:1.1}
+.boton{width:100%;background:black;color:white;padding:16px;border:none;border-radius:12px;font-weight:bold;margin-bottom:12px;font-size:16px}
+.boton-verde{width:100%;background:#006400;color:white;padding:16px;border:3px solid gold;border-radius:12px;font-weight:bold;margin-bottom:12px;font-size:16px}
+.card{background:white;border:2px solid black;border-radius:12px;padding:15px;margin-top:15px}
+input{padding:12px;border:2px solid black;font-size:18px;font-weight:bold;width:90px}
+.neto{background:#d4edda;border:2px solid green;text-align:center;padding:12px;font-size:22px;font-weight:bold}
+.total{background:black;color:white;padding:10px;display:flex;justify-content:space-between}
+.fila{border-bottom:1px solid #ccc;padding:8px;display:flex;justify-content:space-between}
+.top{display:flex;justify-content:space-between;border-bottom:2px solid black;padding-bottom:8px}
+.tab{flex:1;padding:10px;border:2px solid black;font-weight:bold}
+.activo{background:black;color:white}
+</style>
+</head>
+<body>
+<div class="cont" id="app"></div>
+<script>
+let rol=null,sub="recepcion",lista=[],rec="Alfredo",prov="Redondo",javas=5,bruto=135,tara=7;
+function mostrar(){
+let app=document.getElementById("app");
+if(!rol){app.innerHTML=`<h1>TRES CORRALES<br>SISTEMA DE COMERCIO AVICOLA</h1><p style="text-align:center">Solo comercio avícola - Ingresa tu rol</p><button class="boton" onclick="entrar('ASISTENTE')">ASISTENTE (Compra / Venta)</button><button class="boton" onclick="entrar('VENDEDOR')">VENDEDOR (Ventas / Cobranza)</button><button class="boton" onclick="entrar('DESPACHADOR')">DESPACHADOR (Gastos / Planilla)</button><button class="boton-verde" onclick="entrar('BALANCERO')">BALANCERO (Recepción y Despacho)</button>`;return;}
+let total=lista.reduce((a,c)=>a+c.neto,0);let contenido="";
+if(rol==="ASISTENTE"){contenido=`<div class="card"><h3>ASISTENTE AVICOLA</h3><button class="boton">Nueva Compra Avícola</button><button class="boton">Nueva Venta Avícola</button><button class="boton">Kardex Avícola</button></div>`;}
+if(rol==="VENDEDOR"){contenido=`<div class="card"><h3>VENDEDOR AVICOLA</h3><button class="boton">Registrar Venta Avícola</button><button class="boton">Cobrar Cliente Avícola</button><button class="boton">Deudas Avícolas</button></div>`;}
+if(rol==="DESPACHADOR"){contenido=`<div class="card"><h3>DESPACHADOR AVICOLA</h3><button class="boton">Gasto Reparto Avícola</button><button class="boton">Gasto Camión Avícola</button><button class="boton">Planilla Avícola</button></div>`;}
+if(rol==="BALANCERO"){
+let neto=bruto-(javas*tara);
+let filas=lista.slice().reverse().map(p=>`<div class="fila"><span>${p.javas}j - ${p.bruto}kg = ${p.neto}kg - ${p.quien}</span><b>${p.neto}kg</b></div>`).join("");
+if(sub==="recepcion"){contenido=`<div style="display:flex;gap:6;margin-top:12px"><button class="tab activo" onclick="cambiarSub('recepcion')">RECEPCIÓN</button><button class="tab" onclick="cambiarSub('despacho')">DESPACHO</button></div><div class="card"><p>Recepciona: <input value="${rec}" onchange="rec=this.value"></p><p>Proveedor: <b>${prov}</b></p><p>Javas: <input type="number" value="${javas}" onchange="javas=parseInt(this.value)||0;mostrar()"></p><div style="display:flex;gap:10px"><div><label>Bruto</label><br><input type="number" value="${bruto}" onchange="bruto=parseFloat(this.value)||0;mostrar()"></div><div><label>Tara x Java</label><br><input type="number" value="${tara}" onchange="tara=parseFloat(this.value)||0;mostrar()"></div></div><div class="neto">${neto.toFixed(2)} kg NETO AVICOLA</div><br><button class="boton" onclick="guardar()">GUARDAR Y SIGUIENTE</button><div class="total"><span>Pesadas: ${lista.length}</span><span>${total.toFixed(2)} kg</span></div>${filas}</div>`;}
+else{contenido=`<div style="display:flex;gap:6;margin-top:12px"><button class="tab" onclick="cambiarSub('recepcion')">RECEPCIÓN</button><button class="tab activo" onclick="cambiarSub('despacho')">DESPACHO</button></div><div class="card"><h3>DESPACHO AVICOLA</h3><p>Total recepción hoy: <b>${total.toFixed(2)} kg</b> en ${lista.length} pesadas</p></div>`;}
+}
+app.innerHTML=`<div class="top"><b>${rol} - AVICOLA</b><button onclick="salir()">Salir</button></div>${contenido}`;
+}
+function entrar(r){rol=r;mostrar();}
+function salir(){rol=null;mostrar();}
+function cambiarSub(s){sub=s;mostrar();}
+function guardar(){let neto=bruto-(javas*tara);if(neto<=0){alert("Revisa peso");return;}lista.push({javas:javas,bruto:bruto,neto:neto,quien:rec});bruto="";mostrar();}
+mostrar();
+</script>
+</body>
+</html>
