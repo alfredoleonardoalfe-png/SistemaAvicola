@@ -30,31 +30,28 @@ td,th{border:1px solid #ddd;padding:8px;font-size:13px}
 <div id="login" class="card">
 <h2>Bienvenido al<br>SISTEMA DE ADMINISTRACION AVICOLA</h2>
 <p>Digite su usuario y contraseña</p>
-
 <div class="input-box">
 <input id="usuario" placeholder="USUARIO  ej: pollito pollon" autocomplete="off">
 <span onclick="verOjo('usuario',this)">👁️</span>
 </div>
-
 <div class="input-box">
 <input id="password" type="password" placeholder="PASSWORD" autocomplete="off">
 <span onclick="verOjo('password',this)">👁️</span>
 </div>
-
 <button onclick="ingresar()">INGRESAR</button>
 <p id="error" style="color:red"></p>
-<!-- SOLO EL DUEÑO VE ESTO EN SU PANEL, NO EN LOGIN DE TRABAJADORES -->
 <p style="font-size:12px;color:#888">Si dice password incorrecto, dale abajo a REPARAR</p>
 <button class="gray" onclick="reparar()">🔧 REPARAR - BORRAR DATOS VIEJOS</button>
-<p style="font-size:12px;color:#666;margin-top:10px">Dueño Total: admin / admin123</p>
 </div>
 
-<div id="admin" class="card hidden" style="max-width:540px">
+<div id="admin" class="card hidden" style="max-width:560px">
 <h2>USUARIOS SUSCRITOS</h2>
-<div class="badge">✅ 30 DÍAS DE PRUEBA | 💰 COSTO MENSUAL<br><small>Solo tú ves esto, Alfredo</small></div>
-<table><tr><th>EMPRESA</th><th>ESTADO</th><th>DIAS</th></tr><tbody id="listaSuscritos"></tbody></table>
+<div class="badge">✅ SOLO TÚ VES ESTO, ALFREDO<br>30 DÍAS DE PRUEBA + COSTO MENSUAL QUE TÚ PONES</div>
+<table><tr><th>EMPRESA</th><th>DIAS</th><th>COSTO MENSUAL</th><th></th></tr><tbody id="listaSuscritos"></tbody></table>
+
 <h3>AGREGAR USUARIO / EMPRESA</h3>
 <input id="nuevoUsuario" placeholder="Nuevo USUARIO ej: pollito pollon">
+<input id="nuevoCosto" type="number" placeholder="Costo mensual que le cobras ej: 100">
 <input id="nuevoPassAdmin" placeholder="PASSWORD ADMINISTRADOR ej: 0000">
 <input id="nuevoPassAsis" placeholder="PASSWORD ASISTENTE ej: 1234">
 <input id="nuevoPassVend" placeholder="PASSWORD VENDEDOR ej: 4567">
@@ -66,28 +63,25 @@ td,th{border:1px solid #ddd;padding:8px;font-size:13px}
 <div id="panel" class="card hidden">
 <h2 id="tituloEmpresa"></h2>
 <p id="tituloRol"></p>
-<!-- YA NO SE MUESTRA DIAS NI COSTO A LOS USUARIOS DE POLLITO POLLON -->
 <div class="menu" id="menuOpciones"></div>
-
 <div id="gestionJefe" class="cargo-box hidden">
 <h3>👑 MIS CARGOS Y CONTRASEÑAS</h3>
-<p style="font-size:13px">Aquí ves todo. Si quieres un cargo nuevo o un diseño especial, <b>pídeselo a Alfredo</b> y él te lo crea.</p>
+<p style="font-size:13px">Aquí ves todo. Si quieres un cargo nuevo o un diseño especial, <b>pídeselo al DISEÑADOR</b> y él te lo crea.</p>
 <table><tr><th>CARGO</th><th>PASSWORD</th><th></th></tr><tbody id="listaCargos"></tbody></table>
 <h4>AGREGAR NUEVO CARGO</h4>
 <input id="nuevoCargoNombre" placeholder="Nombre del cargo ej: CAJERO">
 <input id="nuevoCargoPass" placeholder="Password ej: 7777">
 <input id="nuevoCargoFuncion" placeholder="Función ej: Caja y cobranza">
 <button class="blue" onclick="agregarCargo()">+ AGREGAR CARGO</button>
-<button onclick="pedirDiseno()">📩 PEDIR DISEÑO ESPECIAL A ALFREDO</button>
+<button onclick="pedirDiseno()">📩 PEDIR DISEÑO ESPECIAL AL DISEÑADOR</button>
 </div>
-
 <button class="sec" onclick="salir()">SALIR</button>
 </div>
 
 <script>
 let datosIniciales = {
   "pollito pollon": {
-    dias:30,
+    dias:30, costo:100,
     cargos:[
       {nombre:"ADMINISTRADOR", pass:"0000", funcion:"Control Total"},
       {nombre:"ASISTENTE", pass:"1234", funcion:"Compra, Venta y Planilla"},
@@ -97,7 +91,6 @@ let datosIniciales = {
   }
 };
 let usuarios = JSON.parse(localStorage.getItem('usuarios_avicola_v3') || 'null') || datosIniciales;
-// Si los datos viejos no tienen 0000, los reparamos solos
 if(!usuarios["pollito pollon"] || !usuarios["pollito pollon"].cargos.find(c=>c.pass==="0000")){
   usuarios = datosIniciales;
   localStorage.setItem('usuarios_avicola_v3', JSON.stringify(usuarios));
@@ -121,7 +114,6 @@ function reparar(){
 function ingresar(){
   let u=document.getElementById('usuario').value.trim().toLowerCase();
   let p=document.getElementById('password').value.trim();
-  // Limpia espacios raros
   u=u.replace(/\s+/g,' ').trim();
   if(u==="admin" && p==="admin123"){
     document.getElementById('login').classList.add('hidden');
@@ -137,7 +129,6 @@ function ingresar(){
   document.getElementById('panel').classList.remove('hidden');
   document.getElementById('tituloEmpresa').innerText="Bienvenido: "+u.toUpperCase();
   document.getElementById('tituloRol').innerText=cargo.nombre+" - "+cargo.funcion;
-
   let menu="";
   if(cargo.nombre==="ADMINISTRADOR") menu="<button>👥 VER MIS TRABAJADORES</button><button>📦 COMPRA</button><button>💰 VENTA</button><button>📋 PLANILLA</button><button>⚖️ BALANCERO</button>";
   else if(cargo.nombre==="ASISTENTE") menu="<button>📦 COMPRA</button><button>💰 VENTA</button><button>📋 PLANILLA</button>";
@@ -145,7 +136,6 @@ function ingresar(){
   else if(cargo.nombre==="BALANCERO") menu="<button>⚖️ RECEPCIÓN</button><button>🚚 DESPACHO</button>";
   else menu="<button>✅ "+cargo.funcion.toUpperCase()+"</button>";
   document.getElementById('menuOpciones').innerHTML=menu;
-
   if(cargo.nombre==="ADMINISTRADOR"){
     document.getElementById('gestionJefe').classList.remove('hidden');
     mostrarCargos();
@@ -177,27 +167,40 @@ function eliminarCargo(i){
   guardar(); mostrarCargos();
 }
 function pedirDiseno(){
-  alert("Tu pedido fue enviado a Alfredo.\n\nÉl te creará el cargo / diseño según lo que le pidas.");
+  alert("Tu pedido fue enviado al DISEÑADOR.\n\nÉl te creará el cargo / diseño según lo que le pidas.");
 }
 function mostrarAdmin(){
   let html="";
-  for(let k in usuarios){ html+="<tr><td>"+k+"</td><td>✅ ACTIVO</td><td>"+usuarios[k].dias+" días</td></tr>"; }
+  for(let k in usuarios){
+    let c = usuarios[k].costo || 0;
+    html+="<tr><td>"+k+"</td><td>"+usuarios[k].dias+" días</td><td>S/ <input style='width:70px;padding:6px' type='number' value='"+c+"' onchange='cambiarCosto(\""+k+"\",this.value)'></td><td><button class='red' style='padding:6px' onclick='eliminarEmpresa(\""+k+"\")'>X</button></td></tr>";
+  }
   document.getElementById('listaSuscritos').innerHTML=html;
+}
+function cambiarCosto(empresa, valor){
+  usuarios[empresa].costo = Number(valor);
+  guardar();
+  alert("Costo de "+empresa+" cambiado a S/ "+valor+" al mes");
+}
+function eliminarEmpresa(k){
+  if(!confirm("¿Eliminar "+k+"?")) return;
+  delete usuarios[k]; guardar();
 }
 function agregarUsuario(){
   let u=document.getElementById('nuevoUsuario').value.trim().toLowerCase();
+  let costo=document.getElementById('nuevoCosto').value.trim() || 0;
   let ad=document.getElementById('nuevoPassAdmin').value.trim();
   let a=document.getElementById('nuevoPassAsis').value.trim();
   let v=document.getElementById('nuevoPassVend').value.trim();
   let b=document.getElementById('nuevoPassBalan').value.trim();
   if(!u||!ad||!a||!v||!b){ alert("Llena todos"); return; }
-  usuarios[u]={dias:30, cargos:[
+  usuarios[u]={dias:30, costo:Number(costo), cargos:[
     {nombre:"ADMINISTRADOR", pass:ad, funcion:"Control Total"},
     {nombre:"ASISTENTE", pass:a, funcion:"Compra, Venta y Planilla"},
     {nombre:"VENDEDOR", pass:v, funcion:"Ventas y Cobranzas"},
     {nombre:"BALANCERO", pass:b, funcion:"Recepción y Despacho"}
   ]};
-  guardar(); alert("Usuario "+u+" agregado con 30 días de prueba");
+  guardar(); alert("Usuario "+u+" agregado con 30 días de prueba y costo S/ "+costo);
 }
 function salir(){
   document.getElementById('admin').classList.add('hidden');
