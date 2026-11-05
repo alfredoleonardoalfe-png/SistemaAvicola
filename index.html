@@ -3,47 +3,176 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TRES CORRALES - SISTEMA AVICOLA</title>
+<title>SISTEMA DE ADMINISTRACION AVICOLA</title>
 <style>
-body{font-family:Arial;margin:0;background:#f2f2f2}
-.cont{max-width:480px;margin:0 auto;padding:15px}
-h1{text-align:center;line-height:1.1}
-.boton{width:100%;background:black;color:white;padding:16px;border:none;border-radius:12px;font-weight:bold;margin-bottom:12px;font-size:16px}
-.boton-verde{width:100%;background:#006400;color:white;padding:16px;border:3px solid gold;border-radius:12px;font-weight:bold;margin-bottom:12px;font-size:16px}
-.card{background:white;border:2px solid black;border-radius:12px;padding:15px;margin-top:15px}
-input{padding:12px;border:2px solid black;font-size:18px;font-weight:bold;width:90px}
-.neto{background:#d4edda;border:2px solid green;text-align:center;padding:12px;font-size:22px;font-weight:bold}
-.total{background:black;color:white;padding:10px;display:flex;justify-content:space-between}
-.fila{border-bottom:1px solid #ccc;padding:8px;display:flex;justify-content:space-between}
-.top{display:flex;justify-content:space-between;border-bottom:2px solid black;padding-bottom:8px}
-.tab{flex:1;padding:10px;border:2px solid black;font-weight:bold}
-.activo{background:black;color:white}
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+body{margin:0;background:#f2f2f2;text-align:center}
+header{background:#1a7a2e;color:white;padding:20px}
+header h1{margin:0;font-size:22px}
+.card{background:white;max-width:460px;margin:20px auto;padding:20px;border-radius:12px;box-shadow:0 2px 10px #0002}
+input{width:100%;padding:12px;margin:6px 0;border:1px solid #ccc;border-radius:8px;font-size:15px}
+button{width:100%;padding:12px;background:#1a7a2e;color:white;border:none;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;margin-top:6px}
+button.sec{background:#ff8c00} button.red{background:#d32f2f} button.blue{background:#0b5ed7}
+.hidden{display:none}
+.badge{background:#e8f5e9;padding:10px;border-radius:8px;margin:10px 0}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+td,th{border:1px solid #ddd;padding:8px;font-size:13px}
+.menu button{margin:5px 0}
+.cargo-box{background:#fff8e1;border:1px solid #ffcc80;padding:10px;border-radius:8px;margin-top:12px;text-align:left}
 </style>
 </head>
 <body>
-<div class="cont" id="app"></div>
+<header><h1>🐔 SISTEMA DE ADMINISTRACION AVICOLA</h1><p>TRES CORRALES - ADMIN</p></header>
+
+<div id="login" class="card">
+<h2>Bienvenido al<br>SISTEMA DE ADMINISTRACION AVICOLA</h2>
+<p>Digite su usuario y contraseña</p>
+<input id="usuario" placeholder="USUARIO  ej: pollito pollon">
+<input id="password" type="password" placeholder="PASSWORD">
+<button onclick="ingresar()">INGRESAR</button>
+<p id="error" style="color:red"></p>
+<div class="badge">✅ <b>30 DÍAS DE PRUEBA GRATIS</b><br>💰 Luego Plan Mensual - Costo Mensual</div>
+<p style="font-size:12px;color:#666">Dueño Total: admin / admin123</p>
+</div>
+
+<div id="admin" class="card hidden" style="max-width:540px">
+<h2>USUARIOS SUSCRITOS</h2>
+<div class="badge">✅ 30 DÍAS DE PRUEBA | 💰 COSTO MENSUAL</div>
+<table><tr><th>EMPRESA</th><th>ESTADO</th><th>DIAS</th></tr><tbody id="listaSuscritos"></tbody></table>
+<h3>AGREGAR USUARIO / EMPRESA</h3>
+<input id="nuevoUsuario" placeholder="Nuevo USUARIO ej: pollito pollon">
+<input id="nuevoPassAdmin" placeholder="PASSWORD ADMINISTRADOR ej: 0000">
+<input id="nuevoPassAsis" placeholder="PASSWORD ASISTENTE ej: 1234">
+<input id="nuevoPassVend" placeholder="PASSWORD VENDEDOR ej: 4567">
+<input id="nuevoPassBalan" placeholder="PASSWORD BALANCERO ej: 1112">
+<button onclick="agregarUsuario()">+ AGREGAR USUARIO</button>
+<button class="sec" onclick="salir()">SALIR</button>
+</div>
+
+<div id="panel" class="card hidden">
+<h2 id="tituloEmpresa"></h2>
+<p id="tituloRol"></p>
+<div class="badge" id="infoPrueba"></div>
+<div class="menu" id="menuOpciones"></div>
+
+<!-- SOLO PARA EL JEFE / ADMINISTRADOR -->
+<div id="gestionJefe" class="cargo-box hidden">
+<h3>👑 MIS CARGOS Y CONTRASEÑAS</h3>
+<p style="font-size:13px">Aquí ves todo. Si quieres un cargo nuevo o un diseño especial, <b>pídeselo a Alfredo</b> y él te lo crea.</p>
+<table><tr><th>CARGO</th><th>PASSWORD</th><th></th></tr><tbody id="listaCargos"></tbody></table>
+<h4>AGREGAR NUEVO CARGO</h4>
+<input id="nuevoCargoNombre" placeholder="Nombre del cargo ej: CAJERO">
+<input id="nuevoCargoPass" placeholder="Password ej: 7777">
+<input id="nuevoCargoFuncion" placeholder="Función ej: Caja y cobranza">
+<button class="blue" onclick="agregarCargo()">+ AGREGAR CARGO</button>
+<button onclick="pedirDiseno()">📩 PEDIR DISEÑO ESPECIAL A ALFREDO</button>
+</div>
+
+<button class="sec" onclick="salir()">SALIR</button>
+</div>
+
 <script>
-let rol=null,sub="recepcion",lista=[],rec="Alfredo",prov="Redondo",javas=5,bruto=135,tara=7;
-function mostrar(){
-let app=document.getElementById("app");
-if(!rol){app.innerHTML=`<h1>TRES CORRALES<br>SISTEMA DE COMERCIO AVICOLA</h1><p style="text-align:center">Solo comercio avícola - Ingresa tu rol</p><button class="boton" onclick="entrar('ASISTENTE')">ASISTENTE (Compra / Venta)</button><button class="boton" onclick="entrar('VENDEDOR')">VENDEDOR (Ventas / Cobranza)</button><button class="boton" onclick="entrar('DESPACHADOR')">DESPACHADOR (Gastos / Planilla)</button><button class="boton-verde" onclick="entrar('BALANCERO')">BALANCERO (Recepción y Despacho)</button>`;return;}
-let total=lista.reduce((a,c)=>a+c.neto,0);let contenido="";
-if(rol==="ASISTENTE"){contenido=`<div class="card"><h3>ASISTENTE AVICOLA</h3><button class="boton">Nueva Compra Avícola</button><button class="boton">Nueva Venta Avícola</button><button class="boton">Kardex Avícola</button></div>`;}
-if(rol==="VENDEDOR"){contenido=`<div class="card"><h3>VENDEDOR AVICOLA</h3><button class="boton">Registrar Venta Avícola</button><button class="boton">Cobrar Cliente Avícola</button><button class="boton">Deudas Avícolas</button></div>`;}
-if(rol==="DESPACHADOR"){contenido=`<div class="card"><h3>DESPACHADOR AVICOLA</h3><button class="boton">Gasto Reparto Avícola</button><button class="boton">Gasto Camión Avícola</button><button class="boton">Planilla Avícola</button></div>`;}
-if(rol==="BALANCERO"){
-let neto=bruto-(javas*tara);
-let filas=lista.slice().reverse().map(p=>`<div class="fila"><span>${p.javas}j - ${p.bruto}kg = ${p.neto}kg - ${p.quien}</span><b>${p.neto}kg</b></div>`).join("");
-if(sub==="recepcion"){contenido=`<div style="display:flex;gap:6;margin-top:12px"><button class="tab activo" onclick="cambiarSub('recepcion')">RECEPCIÓN</button><button class="tab" onclick="cambiarSub('despacho')">DESPACHO</button></div><div class="card"><p>Recepciona: <input value="${rec}" onchange="rec=this.value"></p><p>Proveedor: <b>${prov}</b></p><p>Javas: <input type="number" value="${javas}" onchange="javas=parseInt(this.value)||0;mostrar()"></p><div style="display:flex;gap:10px"><div><label>Bruto</label><br><input type="number" value="${bruto}" onchange="bruto=parseFloat(this.value)||0;mostrar()"></div><div><label>Tara x Java</label><br><input type="number" value="${tara}" onchange="tara=parseFloat(this.value)||0;mostrar()"></div></div><div class="neto">${neto.toFixed(2)} kg NETO AVICOLA</div><br><button class="boton" onclick="guardar()">GUARDAR Y SIGUIENTE</button><div class="total"><span>Pesadas: ${lista.length}</span><span>${total.toFixed(2)} kg</span></div>${filas}</div>`;}
-else{contenido=`<div style="display:flex;gap:6;margin-top:12px"><button class="tab" onclick="cambiarSub('recepcion')">RECEPCIÓN</button><button class="tab activo" onclick="cambiarSub('despacho')">DESPACHO</button></div><div class="card"><h3>DESPACHO AVICOLA</h3><p>Total recepción hoy: <b>${total.toFixed(2)} kg</b> en ${lista.length} pesadas</p></div>`;}
+let usuarios = JSON.parse(localStorage.getItem('usuarios_avicola_v2') || 'null') || {
+  "pollito pollon": {
+    dias:30,
+    cargos:[
+      {nombre:"ADMINISTRADOR", pass:"0000", funcion:"Control Total"},
+      {nombre:"ASISTENTE", pass:"1234", funcion:"Compra, Venta y Planilla"},
+      {nombre:"VENDEDOR", pass:"4567", funcion:"Ventas y Cobranzas"},
+      {nombre:"BALANCERO", pass:"1112", funcion:"Recepción y Despacho"}
+    ]
+  }
+};
+let empresaActual="";
+
+function guardar(){ localStorage.setItem('usuarios_avicola_v2', JSON.stringify(usuarios)); mostrarAdmin(); }
+function ingresar(){
+  let u=document.getElementById('usuario').value.trim().toLowerCase();
+  let p=document.getElementById('password').value.trim();
+  if(u==="admin" && p==="admin123"){
+    document.getElementById('login').classList.add('hidden');
+    document.getElementById('admin').classList.remove('hidden');
+    mostrarAdmin(); return;
+  }
+  let emp=usuarios[u];
+  if(!emp){ document.getElementById('error').innerText="Usuario no encontrado"; return; }
+  let cargo=emp.cargos.find(c=>c.pass===p);
+  if(!cargo){ document.getElementById('error').innerText="Password incorrecto"; return; }
+  empresaActual=u;
+  document.getElementById('login').classList.add('hidden');
+  document.getElementById('panel').classList.remove('hidden');
+  document.getElementById('tituloEmpresa').innerText="Bienvenido: "+u.toUpperCase();
+  document.getElementById('tituloRol').innerText=cargo.nombre+" - "+cargo.funcion;
+  document.getElementById('infoPrueba').innerHTML="✅ Te quedan <b>"+emp.dias+" DÍAS DE PRUEBA</b><br>💰 Luego Costo Mensual";
+
+  let menu="";
+  if(cargo.nombre==="ADMINISTRADOR") menu="<button>👥 VER MIS TRABAJADORES</button><button>📦 COMPRA</button><button>💰 VENTA</button><button>📋 PLANILLA</button><button>⚖️ BALANCERO</button>";
+  else if(cargo.nombre==="ASISTENTE") menu="<button>📦 COMPRA</button><button>💰 VENTA</button><button>📋 PLANILLA</button>";
+  else if(cargo.nombre==="VENDEDOR") menu="<button>🛒 VENTAS</button><button>💵 COBRANZAS</button>";
+  else if(cargo.nombre==="BALANCERO") menu="<button>⚖️ RECEPCIÓN</button><button>🚚 DESPACHO</button>";
+  else menu="<button>✅ "+cargo.funcion.toUpperCase()+"</button>";
+  document.getElementById('menuOpciones').innerHTML=menu;
+
+  if(cargo.nombre==="ADMINISTRADOR"){
+    document.getElementById('gestionJefe').classList.remove('hidden');
+    mostrarCargos();
+  } else {
+    document.getElementById('gestionJefe').classList.add('hidden');
+  }
 }
-app.innerHTML=`<div class="top"><b>${rol} - AVICOLA</b><button onclick="salir()">Salir</button></div>${contenido}`;
+function mostrarCargos(){
+  let emp=usuarios[empresaActual];
+  let html="";
+  emp.cargos.forEach((c,i)=>{
+    html+="<tr><td><b>"+c.nombre+"</b><br><small>"+c.funcion+"</small></td><td><b>"+c.pass+"</b></td><td><button class='red' style='padding:6px' onclick='eliminarCargo("+i+")'>X</button></td></tr>";
+  });
+  document.getElementById('listaCargos').innerHTML=html;
 }
-function entrar(r){rol=r;mostrar();}
-function salir(){rol=null;mostrar();}
-function cambiarSub(s){sub=s;mostrar();}
-function guardar(){let neto=bruto-(javas*tara);if(neto<=0){alert("Revisa peso");return;}lista.push({javas:javas,bruto:bruto,neto:neto,quien:rec});bruto="";mostrar();}
-mostrar();
+function agregarCargo(){
+  let n=document.getElementById('nuevoCargoNombre').value.trim().toUpperCase();
+  let p=document.getElementById('nuevoCargoPass').value.trim();
+  let f=document.getElementById('nuevoCargoFuncion').value.trim();
+  if(!n||!p||!f){ alert("Llena nombre, password y función"); return; }
+  usuarios[empresaActual].cargos.push({nombre:n, pass:p, funcion:f});
+  guardar(); mostrarCargos();
+  alert("Cargo "+n+" agregado con password "+p);
+  document.getElementById('nuevoCargoNombre').value=""; document.getElementById('nuevoCargoPass').value=""; document.getElementById('nuevoCargoFuncion').value="";
+}
+function eliminarCargo(i){
+  if(!confirm("¿Eliminar este cargo?")) return;
+  usuarios[empresaActual].cargos.splice(i,1);
+  guardar(); mostrarCargos();
+}
+function pedirDiseno(){
+  alert("Tu pedido fue enviado a Alfredo.\n\nÉl te creará el cargo / diseño según lo que le pidas.\n\nEjemplo: 'Alfredo quiero un cargo CAJERO que solo vea caja'");
+}
+function mostrarAdmin(){
+  let html="";
+  for(let k in usuarios){ html+="<tr><td>"+k+"</td><td>✅ ACTIVO</td><td>"+usuarios[k].dias+" días</td></tr>"; }
+  document.getElementById('listaSuscritos').innerHTML=html;
+}
+function agregarUsuario(){
+  let u=document.getElementById('nuevoUsuario').value.trim().toLowerCase();
+  let ad=document.getElementById('nuevoPassAdmin').value.trim();
+  let a=document.getElementById('nuevoPassAsis').value.trim();
+  let v=document.getElementById('nuevoPassVend').value.trim();
+  let b=document.getElementById('nuevoPassBalan').value.trim();
+  if(!u||!ad||!a||!v||!b){ alert("Llena todos"); return; }
+  usuarios[u]={dias:30, cargos:[
+    {nombre:"ADMINISTRADOR", pass:ad, funcion:"Control Total"},
+    {nombre:"ASISTENTE", pass:a, funcion:"Compra, Venta y Planilla"},
+    {nombre:"VENDEDOR", pass:v, funcion:"Ventas y Cobranzas"},
+    {nombre:"BALANCERO", pass:b, funcion:"Recepción y Despacho"}
+  ]};
+  guardar(); alert("Usuario "+u+" agregado con 30 días de prueba");
+}
+function salir(){
+  document.getElementById('admin').classList.add('hidden');
+  document.getElementById('panel').classList.add('hidden');
+  document.getElementById('gestionJefe').classList.add('hidden');
+  document.getElementById('login').classList.remove('hidden');
+}
+mostrarAdmin();
 </script>
 </body>
 </html>
